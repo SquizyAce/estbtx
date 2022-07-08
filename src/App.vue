@@ -1,28 +1,59 @@
 <template>
   <div id="app">
     <nav>
-      <router-link to="/">Home</router-link>
     </nav>
-    <router-view/>
+    <b-table striped hover :items="clearTh" :fields="clearField"></b-table>
   </div>
 </template>
 
 <script>
 export default {
-  mounted() {
-    this.$BX24.callMethod('placement.bind', { PLACEMENT: 'CRM_DEAL_DETAIL_TAB', HANDLER: "https://cdn-ru.bitrix24.ru/b22015474/app_local/88498740a86f640208fc0b8d179d6bd7/index.html", TITLE: 'Расходы по сделкам' });
-    console.log(this.$BX24.getAuth());
-    this.$BX24.batch({
-      info: ['app.info'],
-      profile: ['profile'],
-    }).then(console.log);
-
-    console.log(this.$BX24.placement.info())
+  data: () => ({
+    clearTh: {},
+    clearField: []
+  }),
+  async mounted() {
+    console.log(BX24.getAuth())
+    await this.$store.dispatch('fetchItems')
+    await this.$store.dispatch('fetchFields')
     
-    console.log('Выше')
-
   },
-  inject: ['$BX24'],
+  computed: {
+    items() {
+      return this.$store.getters.items
+    },
+    fields() {
+      return this.$store.getters.fields
+    }
+  },
+  watch: {
+
+    items() {
+      console.log(this.items)
+      this.clearTh = this.items.map(function(sort) {
+        let clear = []
+        for (const [key, value] of Object.entries(sort)) {
+        if (key.includes('PROPERTY_') || key === 'ID')
+        clear[key] = value
+      }
+      return clear
+      })
+    },
+
+    fields() {
+      let clear = [{key: 'ID', label: 'ID'},]
+      for (const [key, value] of Object.entries(this.fields)) {
+        if (key.includes('PROPERTY_'))
+        clear.push({'key': key, label: value.NAME})
+      }
+      this.clearField = clear
+    }
+
+
+
+
+
+  }
 }
 </script>
 
