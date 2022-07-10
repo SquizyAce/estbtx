@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import list from './modules/list'
-
+import uses from './modules/uses'
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -14,6 +14,6 @@ export default new Vuex.Store({
   actions: {
   },
   modules: {
-    list
+    list, uses
   }
 })

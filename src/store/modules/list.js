@@ -3,7 +3,8 @@ export default {
         items: [],
         fields: {},
         users: [],
-        deals: []
+        deals: [],
+        dealsPay: [],
     },
     mutations:{
         setItems(state, items) {
@@ -18,11 +19,15 @@ export default {
         setDeals(state, deals) {
             state.deals = deals
         },
+        setDealsPay(state, dealsPay) {
+            state.dealsPay = dealsPay
+        },
         clearInfo(state) {
             state.items = []
             state.fields = {}
             state.users = []
             state.deals = []
+            state.dealsPay = []
         }
     },
     actions: {
@@ -57,7 +62,11 @@ export default {
                     if(result.error())
                         alert("Error: " + result.error());
                     else{
-                        let users = result.data()
+                        let users = {}
+                        for (const[key, value] of Object.entries(result.data()))
+                        {
+                            users[value.ID] = value.LAST_NAME + ' ' + value.NAME
+                        }
                         commit('setUsers', users)
                         dispatch('fetchDeals')
                     }
@@ -69,7 +78,7 @@ export default {
             BX24.callMethod(
                 "crm.deal.list", 
                 { 
-                    select: [ "ID", "TITLE" ]
+                    select: [ "ID", "TITLE", "OPPORTUNITY" ]
                 }, 
                 function(result) 
                 {
@@ -78,8 +87,15 @@ export default {
                     else
                     {
 
-                        let deals = result.data()
-                        commit('setDeals', deals)			
+                        let deals = {}
+                        let dealsPay = {}
+                        for (const[key, value] of Object.entries(result.data()))
+                        {
+                            deals[value.ID] = value.TITLE
+                            dealsPay[value.ID] = value.OPPORTUNITY
+                        }
+                        commit('setDeals', deals)	
+                        commit('setDealsPay', dealsPay)		
                         dispatch('fetchItems')					
                     }
                 }
@@ -108,6 +124,7 @@ export default {
     },
     getters: {
         deals: s => s.deals,
+        dealsPay: s => s.dealsPay,
         users: s => s.users,
         items: s => s.items,
         fields: s => s.fields,
