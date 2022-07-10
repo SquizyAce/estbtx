@@ -3,167 +3,220 @@
 <div>
   <b-navbar type="dark" variant="dark">
     <b-navbar-nav>
-      <b-nav-item href="#" @click="showModal">Добавить</b-nav-item>
+      <b-nav-item href="#" @click="showModal()">Добавить</b-nav-item>
     </b-navbar-nav>
   </b-navbar>
 </div>
 
 
-    <b-table striped hover :items="clearTh" :fields="clearField"></b-table>
+    <b-table striped hover :items="clearTh" :fields="clearField">
+      <template #cell(PROPERTY_BTN) = row>
+        <b-button size="sm" @click="showEditElem(row.item)" class="mr-2">
+          <b-icon-pen></b-icon-pen>
+        </b-button>
+        <b-button size="sm" @click="deleteElem(row.item.ID)" class="mr-2">
+          <b-icon-backspace></b-icon-backspace>
+        </b-button>
+      </template>
+    </b-table>
 
   <div>
     <b-modal ref="my-modal" size="lg" hide-footer title="Using Component Methods">
       <div class="d-block text-center">
 
         <b-form-group label="Тип расхода" label-for="name-input">
-          <b-form-select v-model="selected" :options="options"></b-form-select>
+          <b-form-select v-model="typePayment" :options="fields.PROPERTY_123.DISPLAY_VALUES_FORM"></b-form-select>
         </b-form-group>
 
         <b-form-group label="Назначения платежа" label-for="name-input">
-          <b-form-input v-model="payname" id="text" type="text"></b-form-input>
+          <b-form-input v-model="payname" type="text"></b-form-input>
         </b-form-group>
 
         <b-form-group label="Планируемая дата оплаты" label-for="name-input">
-          <b-form-input v-model="trueDate" id="date" type="date"></b-form-input>
+          <b-form-input v-model="trueDate"  type="date"></b-form-input>
         </b-form-group>
 
         <b-form-group label="Фактическая дата оплаты" label-for="name-input">
-          <b-form-input v-model="realDate" id="date" type="date"></b-form-input>
+          <b-form-input v-model="realDate" type="date"></b-form-input>
         </b-form-group>
 
         <b-form-group label="Сумма расхода" label-for="name-input">
-          <b-form-input v-model="payment" id="number" type="number"></b-form-input>
+          <b-form-input v-model="payment" type="number"></b-form-input>
         </b-form-group>
 
         <b-form-group label="Поле связь со сделкой" label-for="name-input">
-          <b-form-select v-model="selected" :options="options"></b-form-select>
+          <b-form-select v-model="dealJoin" :options="deals"></b-form-select>
         </b-form-group>
 
         <b-form-group label="Ответственный " label-for="name-input">
-          <b-form-select v-model="selected" :options="options"></b-form-select>
+          <b-form-select v-model="selected" :options="users"></b-form-select>
         </b-form-group>
 
         
 
       </div>
-      <b-button class="mt-3" variant="outline-info" block @click.prevent="elemAd()">Добавить</b-button>
+      <b-button  v-if="editadd" class="mt-3" variant="outline-info" block @click.prevent="elemAd()">Добавить</b-button>
+      <b-button  v-if="!editadd" class="mt-3" variant="outline-info" block @click.prevent="elemEdit()">Изменить</b-button>
     </b-modal>
   </div>
 
+      <div class="layer2">
+        <b-card>
+          Расчёт по <b-form-select v-model="dealCount" :options="deals"></b-form-select>
+          <b-card-text>
+            Сумма расходов: {{this.countData.AllPay}}<br>
+            Сумма тип расхода а: {{this.countData.TypeA}} <br>
+            Сумма тип расхода б: {{this.countData.TypeB}} <br>
+            Общая сумма расходов по типам: {{countData.ABPay}}<br>
+            Маржинальность: {{this.countData.Profit}}%<br>
+          </b-card-text>
+        </b-card>
+      </div>
 
   </div>
   
 </template>
 
 <script>
-import { v4 as uuidv4 } from 'uuid';
 export default {
   data: () => ({
-    clearTh: {},
+    clearTh: [],
     clearField: [],
+    typePayment: null,
+    dealJoin: null,
     selected: null,
     payname: '',
     trueDate: '',
     realDate: '',
     payment: null,
-        options: [
-          { value: null, text: 'Please select an option' },
-          { value: 'a', text: 'This is First option' },
-          { value: 'b', text: 'Selected Option' },
-          { value: { C: '3PO' }, text: 'This is an option with object value' },
-          { value: 'd', text: 'This one is disabled', disabled: true }
-        ]
+    editadd: false,
+    id: null,
+    dealCount: null,
+    countData: {}
   }),
   async mounted() {
     console.log(BX24.getAuth())
     await this.$store.dispatch('fetchFields')
-    let params = {
-                'IBLOCK_TYPE_ID': 'lists',
-                'IBLOCK_ID': '33',
-            }
-            BX24.callMethod(
-                'lists.field.get',
-                params,
-                function(result)
-                {
-                    if(result.error())
-                        alert("Error: " + result.error());
-                    else{
-                        console.log(result.data())
-                    }
-                }
-            );
   },
+
+  
   methods: {
     showModal() {
+        this.editadd = true
         this.$refs['my-modal'].show()
       },
-    elemAd() {
+    async deleteElem(id) {
+        await this.$store.dispatch('deleteItem', id)
+      },
+    async showEditElem(item){
+      if (item.PROPERTY_129)
+      this.realDate  = (item.PROPERTY_129).replace(/([0-9]{2}).([0-9]{2}).([0-9]{4})/, '$3-$2-$1');
+      if (item.PROPERTY_127)
+      this.trueDate  = (item.PROPERTY_127).replace(/([0-9]{2}).([0-9]{2}).([0-9]{4})/, '$3-$2-$1');
+      this.editadd = false
+      this.selected = item.selected
+      this.dealJoin = item.dealJoin
+      this.payment = item.PROPERTY_131
+      this.payname = item.PROPERTY_125
+      this.typePayment = item.typePayment
+      this.id = item.ID
+      this.$refs['my-modal'].show()
+    },
+    async elemAd() {
       const formData = {
         payname: this.payname,
         trueDate: this.trueDate,  
         realDate: this.realDate,
-        payment: this.payment    
+        payment: this.payment,
+        typePayment: this.typePayment,
+        dealJoin: this.dealJoin,
+        selected: this.selected   
       }
-      console.log(formData)
-
-      var params = {
-      'IBLOCK_TYPE_ID': 'lists',
-      'IBLOCK_ID': '33',
-      'ELEMENT_CODE': uuidv4(),
-      'FIELDS': {
-          'NAME': 'Test element 1',
-          // 'PROPERTY_123': { 'n0': },
-          'PROPERTY_125': { 'n0': this.payname },
-          'PROPERTY_127': { 'n0': this.trueDate },
-          'PROPERTY_129': { 'n0': this.realDate },
-          'PROPERTY_131': { 'n0': this.payment },
-          'PROPERTY_133': { 'n0': 1 },
-          'PROPERTY_135': { 'n0': 7 },
-          
+      console.log(this.trueDate, this.realDate, typeof this.trueDate, typeof this.realDate)
+      await this.$store.dispatch('addItem', formData)
+    },
+    async elemEdit() {
+      const formData = {
+        payname: this.payname,
+        trueDate: this.trueDate,  
+        realDate: this.realDate,
+        payment: this.payment,
+        typePayment: this.typePayment,
+        dealJoin: this.dealJoin,
+        selected: this.selected,  
+        id: this.id 
       }
-      }      
-      BX24.callMethod(
-      'lists.element.add',
-      params,
-      function(result)
-      {
-            if(result.error())
-              alert("Error: " + result.error());
-          else
-              console.log("Success: " + result.data());
-      }
-      );      
-      this.$router.go()
+      await this.$store.dispatch('editItem', formData)
     }
   },
+
+
   computed: {
     items() {
       return this.$store.getters.items
     },
     fields() {
       return this.$store.getters.fields
+    },
+    deals() {
+      return this.$store.getters.deals
+    },
+    dealsPay() {
+      return this.$store.getters.dealsPay
+    },
+    users() {
+      return this.$store.getters.users
     }
   },
   watch: {
 
+    dealCount() {
+      this.countData = {
+        TypeA: null,
+        TypeB: null,
+        AllPay: null,
+        ABPay: null,
+        Profit: null
+    }
+      this.clearTh.forEach(elem => {
+        if(this.dealCount === elem.dealJoin)
+        {
+          if (elem.typePayment == 93 || elem.typePayment == 95)
+          this.countData.ABPay += parseFloat(elem.PROPERTY_131)
+          if(elem.typePayment == 93)
+          this.countData.TypeA += parseFloat(elem.PROPERTY_131)
+          else if(elem.typePayment == 95)
+          this.countData.TypeB += parseFloat(elem.PROPERTY_131)
+          this.countData.AllPay += parseFloat(elem.PROPERTY_131)
+        }
+      })
+      this.countData.Profit = (100 - this.countData.AllPay / (this.dealsPay[this.dealCount] / 100 )).toFixed(2) // маржинальность
+    },
+
     items() {
       this.clearTh = this.items.map(function(sort) {
-        let clear = []
+        let clear = [] 
         for (const [key, value] of Object.entries(sort)) {
         if (key.includes('PROPERTY_') || key === 'ID')
         {
           if (typeof value === 'object')
           for (const [key1, value1] of Object.entries(value)) {
             sort[key] = value1
-            
           }
           clear[key] = sort[key]
         }
-        
       }
       return clear
       })
+      for (let elem of this.clearTh)
+      {
+          elem.dealJoin = elem.PROPERTY_133
+          elem.selected  = elem.PROPERTY_135
+          elem.typePayment = elem.PROPERTY_123
+          elem.PROPERTY_133 = this.deals[elem.PROPERTY_133]
+          elem.PROPERTY_135 = this.users[elem.PROPERTY_135]
+          elem.PROPERTY_123 = this.fields.PROPERTY_123.DISPLAY_VALUES_FORM[elem.PROPERTY_123]
+      }
     },
 
     fields() {
@@ -172,6 +225,7 @@ export default {
         if (key.includes('PROPERTY_'))
         clear.push({'key': key, label: value.NAME})
       }
+      clear.push({'key': "PROPERTY_BTN", label: "Действия"})
       this.clearField = clear
     }
 
@@ -184,5 +238,5 @@ export default {
 </script>
 
 <style lang="scss">
-
+@import 'assets/index.css'; 
 </style>
