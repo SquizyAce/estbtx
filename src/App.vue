@@ -24,31 +24,36 @@
     <b-modal ref="my-modal" size="lg" hide-footer title="Using Component Methods">
       <div class="d-block text-center">
 
-        <b-form-group label="Тип расхода" label-for="name-input">
+        <b-form-group label="Тип расхода">
           <b-form-select v-model="typePayment" :options="fields.PROPERTY_123.DISPLAY_VALUES_FORM"></b-form-select>
         </b-form-group>
 
-        <b-form-group label="Назначения платежа" label-for="name-input">
+        <b-form-group>
+          <label for="name-input">Назначения платежа <small style="color: red;" v-if="!$v.payname.required">(необходимо заполнить)</small></label>
           <b-form-input v-model="payname" type="text"></b-form-input>
+          
         </b-form-group>
 
-        <b-form-group label="Планируемая дата оплаты" label-for="name-input">
+        <b-form-group label="Планируемая дата оплаты">
           <b-form-input v-model="trueDate"  type="date"></b-form-input>
         </b-form-group>
 
-        <b-form-group label="Фактическая дата оплаты" label-for="name-input">
+        <b-form-group label="Фактическая дата оплаты">
           <b-form-input v-model="realDate" type="date"></b-form-input>
         </b-form-group>
 
-        <b-form-group label="Сумма расхода" label-for="name-input">
+        <b-form-group>
+          <label for="">Сумма расхода <small style="color: red;" v-if="!$v.payment.required">(необходимо заполнить)</small></label>
           <b-form-input v-model="payment" type="number"></b-form-input>
         </b-form-group>
 
-        <b-form-group label="Поле связь со сделкой" label-for="name-input">
+        <label for="">Поле связь со сделкой <small style="color: red;" v-if="!$v.dealJoin.required">(необходимо выбрать)</small></label>
+        <b-form-group>
           <b-form-select v-model="dealJoin" :options="deals"></b-form-select>
         </b-form-group>
 
-        <b-form-group label="Ответственный " label-for="name-input">
+        <label for="">Ответственный <small style="color: red;" v-if="!$v.selected.required">(необходимо выбрать)</small></label>
+        <b-form-group>
           <b-form-select v-model="selected" :options="users"></b-form-select>
         </b-form-group>
 
@@ -78,6 +83,7 @@
 </template>
 
 <script>
+import {required} from 'vuelidate/lib/validators'
 export default {
   data: () => ({
     clearTh: [],
@@ -123,6 +129,11 @@ export default {
       this.$refs['my-modal'].show()
     },
     async elemAd() {
+      if (this.$v.$invalid){
+        this.$v.touch()
+        return
+      }
+      
       const formData = {
         payname: this.payname,
         trueDate: this.trueDate,  
@@ -136,6 +147,10 @@ export default {
       await this.$store.dispatch('addItem', formData)
     },
     async elemEdit() {
+      if (this.$v.$invalid){
+        this.$v.touch()
+        return
+      }
       const formData = {
         payname: this.payname,
         trueDate: this.trueDate,  
@@ -167,6 +182,12 @@ export default {
     users() {
       return this.$store.getters.users
     }
+  },
+  validations: {
+    payname: {required},
+    payment: {required},
+    dealJoin: {required},
+    selected: {required}
   },
   watch: {
 
