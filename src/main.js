@@ -43,7 +43,7 @@ BX24.init(function(){
     function(result)
     {
         if(result.error())
-            alert("Error: " + result.error());
+            console.log("Error: " + result.error());
         else
         {
           BX24.callMethod(
@@ -56,7 +56,7 @@ BX24.init(function(){
             function(result)
             {
                 if(result.error())
-                    alert("Error: " + result.error());
+                console.log("Error: " + result.error());
             }
           );
         }

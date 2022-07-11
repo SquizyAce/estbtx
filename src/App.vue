@@ -3,7 +3,7 @@
 <div>
   <b-navbar type="dark" variant="dark">
     <b-navbar-nav>
-      <b-nav-item href="#" @click="showModal()">Добавить</b-nav-item>
+      <b-nav-item style="color: white;" href="#" @click="showModal()">Добавить</b-nav-item>
     </b-navbar-nav>
   </b-navbar>
 </div>
